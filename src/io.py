@@ -10,7 +10,7 @@ LOG = logging.getLogger(__name__)
 data_path = fr'/mnt/z/princess/data/' # for windows
 
 
-def load(fpath: str):
+def load_nii(fpath: str):
     """loads volume from filepath and returns N-Dim numpy array"""
     LOG.info(f"loading: {fpath}")
     imgarray = ants.image_read(fpath)
