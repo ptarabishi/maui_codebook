@@ -40,4 +40,28 @@ def get_file(experiment_path, data_stage, extension):
 def get_dataset(path):
     hf = h5py.File(path, 'r')
     return hf['labels'][...]
-    
+
+## new functions for loading in h5 files
+def load_clusters(experiment_path):
+    file = glob.glob(f'{experiment_path}/*signals.h5')[0]
+    with h5py.File(file, 'r') as f:
+        cluster_labels = f['labels'][...]
+        df = f['df/f'][...]
+    return cluster_labels, df
+
+def load_acquisition_params(experiment_path):
+    file = glob.glob(f'{experiment_path}/*acquisition_parameters.h5')[0]
+    with h5py.File(file, 'r') as f:
+        scope_fr = f['scope_fr'][...]
+        camera_fr = f['camera_fr'][...]
+        brain_dim = f['brain_dimensions'][...]
+        brain_dim= brain_dim.reshape(-1)
+    return scope_fr, camera_fr, brain_dim
+
+def load_fictrac_data(experiment_path):
+    file = glob.glob(f'{experiment_path}/*fictrac.h5')[0]
+    with h5py.File(file, 'r') as f:
+        smoothed_speed = f['smoothed_speed'][...]
+        xy_pos = f['2d_pos'][...]
+        delta_rot = f['delta_rot'][...]
+    return smoothed_speed, xy_pos, delta_rot
