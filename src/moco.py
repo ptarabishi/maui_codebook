@@ -1,10 +1,12 @@
+# written by Sama Ahmed
+
 import ants
 import numpy as np
 from src import io
 
 # generate mean brain based on first 300 volumes
-def generate_fixed(brain, volumes:int):
-    mean = np.mean(brain[...,0:volumes], axis=-1)
+def generate_fixed(brain_arr, volumes:int):
+    mean = np.mean(brain_arr[...,0:volumes], axis=-1)
     fixed = ants.from_numpy(mean)
     return mean, fixed
 

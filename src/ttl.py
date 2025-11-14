@@ -1,4 +1,8 @@
 # functions for ttl synch
+# written by Carter Archuleta
+# 
+
+
 import pandas as pd
 import numpy as np
 
@@ -60,3 +64,12 @@ def get_frame_rate(timestamps):
 
     frame_rate = 1 / np.mean(timestamps.diff().dropna())
     return float(frame_rate * 1000) # Convert to Hz from mHz
+
+def convert_maui_times(framerate, signal_array):
+    time_frames = [x for x in range(1, signal_array.shape[-1])]
+    # change framerate to volume rate in Hz
+    volume_rate = framerate / signal_array.shape[0]
+    time_secs = [0] + [x/volume_rate for x in time_frames]
+
+    print(f'volume rate: {volume_rate:.2f} Hz, total experiment length {time_secs[-1]:.2f} seconds')
+    return volume_rate, time_secs
