@@ -27,6 +27,9 @@ def read_csv(csv_file_path):
             side_camera_idx = idx
     if len(data.columns) == 3:
         data = data.rename(columns={f'{data.columns[scope_idx]}': 'Scope', f'{data.columns[side_camera_idx]}': 'Side Camera'})
+    if len(data.columns) == 4:
+        data = data.rename(columns={f'{data.columns[side_camera_idx - 1]}': 'Scope', f'{data.columns[side_camera_idx]}': 'Side Camera', f'{data.columns[side_camera_idx + 1]}': 'Opto'})
+
     return data
 
 def get_TTL_frame_period(data):
