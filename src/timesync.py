@@ -6,13 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def extract_scope_timestamps(experiment_path, plot = False):
-    camera_ttl_ms, raw_scope_ttl = load_scope_voltage_data(experiment_path)
+    raw_scope_ttl = load_scope_voltage_data(experiment_path)
     raw_scope_xml = load_scope_xml_data(experiment_path)
 
     true_scope_ttl = pull_nearest_timestamps(raw_scope_xml, raw_scope_ttl)
 
     if plot == True:
-        plot_timestamps(raw_scope_ttl, true_scope_ttl)
+        plot_timestamps(raw_scope_xml, true_scope_ttl)
 
     return pd.DataFrame(true_scope_ttl)
 

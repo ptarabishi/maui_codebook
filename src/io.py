@@ -27,12 +27,12 @@ def save_pickle(fpath):
     pass
 
 ## new functions for loading in h5 files
-def get_base_path(experiment_id, raw = None, processed = None, base_dir = '/Volumes/AhmedLab/princess/data/'):
+def get_base_path(experiment_id, data_stage, base_dir = '/Volumes/AhmedLab/princess/data/'):
     # only one can be true
     experiment_id = str(experiment_id)
-    if raw == True:
+    if data_stage == 'raw':
         experiment_path = glob.glob(os.path.join(base_dir, 'raw', f'*{experiment_id}'))[0]
-    if processed == True:
+    if data_stage == 'processed':
         experiment_path = glob.glob(os.path.join(base_dir, 'processed', f'*{experiment_id}'))[0]
 
     return experiment_path
