@@ -27,6 +27,16 @@ def save_pickle(fpath):
     pass
 
 ## new functions for loading in h5 files
+def get_base_path(experiment_id, data_stage, base_dir = '/Volumes/AhmedLab/princess/data/'):
+    # only one can be true
+    experiment_id = str(experiment_id)
+    if data_stage == 'raw':
+        experiment_path = glob.glob(os.path.join(base_dir, 'raw', f'*{experiment_id}'))[0]
+    if data_stage == 'processed':
+        experiment_path = glob.glob(os.path.join(base_dir, 'processed', f'*{experiment_id}'))[0]
+
+    return experiment_path
+
 def load_clusters(experiment_path):
     file = glob.glob(f'{experiment_path}/*signals.h5')[0]
     with h5py.File(file, 'r') as f:
