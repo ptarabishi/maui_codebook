@@ -9,51 +9,13 @@ div_cmap = sns.color_palette('coolwarm', as_cmap=True)
 sing_cmap = sns.color_palette('light:b', as_cmap=True)
 color = 'b'
 
-def plot_raw_calcium_traces(timestamps, signal_2d, sv_toplot=30, y_shift=5):
-    """
-    Inputs:
-        timestamps: timeseries of experiment
-        signal_2d: array of (supervoxel, df/F timeseries)
-        sv_toplot: number of supervoxel traces to plot
-        y_shift: adjust for more/less space in between traces
-    """
+def plot_zscored_activity(clusters_toplot,timestamp_array, signal_array):
+    fig, ax = plt.subplots(figsize=(20,len(clusters_toplot)))
+    yshift = 5
 
-    figure = plt.figure(figsize=(20, 20))
-    for idx, svoxel in enumerate(signal_2d):
-        trace = svoxel + (y_shift*idx)
-        plt.plot(timestamps, trace, color=color)
-        if idx == sv_toplot:
-            break
-
-def plot_fictrac_and_calcium(timestamps, fictrac_param, signal_2d,  sv_toplot=30, y_shift=5):
-    """
-    Plots df/F calcium traces of 2d signal array aligned with behavior
-
-    Inputs:
-    timestamps: timeseries of experiment
-    fictrac_param: array of fictrac parameter over time
-    signal_2d: array of (supervoxel, df/F timeseries)
-    sv_toplot: number of supervoxel traces to plot
-    y_shift: adjust for more/less space in between traces
-    """
-
-    figure = plt.figure(figsize=(30,20))
-    gs = GridSpec(nrows=3, ncols=1, figure=figure)
-
-    subplot1 = figure.add_subplot(gs[0:2, :])
-    for idx, svoxel in enumerate(signal_2d):
-        trace = svoxel + (y_shift*idx)
-        subplot1.plot(timestamps, trace, color=color)
-        if idx == sv_toplot:
-            break
-    plt.xlim(0, max(signal_2d)+10)
-    
-    subplot2 = figure.add_subplot(gs[2, :])
-    subplot2.plot(fictrac_param, color=color)
-    plt.ylim(max(fictrac_param)*1.5)
-    plt.xlim(0, max(signal_2d)+10)
-    plt.xlabel('time(s)')
-
+    for idx, ind_cluster in enumerate(clusters_toplot):
+        activity = signal_array[ind_cluster[0],ind_cluster[1]]
+        ax.plot(timestamp_array, activity + (yshift*idx))
 
 def plot_spatial_clusters(spatial_array, normalize_colors=False):
     figure = plt.figure(figsize=(40, 20), constrained_layout=True)
@@ -82,3 +44,20 @@ def plot_spatial_clusters(spatial_array, normalize_colors=False):
             if counter == spatial_array.shape[0]:
                 break
     figure.colorbar(images[0], ax=axs)
+
+# to make spatial array of clusters of interest
+def create_blank_brain(cluster_2d_arr):
+    blank_brain = np.zeros(cluster_2d_arr.shape)
+    return blank_brain
+
+def identify_single_cluster(cluster_2d_arr, cluster_id, brain_1d_arr = None, blank = False):
+    if blank == True:
+        brain_1d_arr = create_blank_brain(cluster_2d_arr)
+    else:
+        brain_1d_arr = brain_1d_arr
+    for slice, pixels in enumerate(cluster_2d_arr):
+        if slice == cluster_id[0]:
+            for idx, cluster_id in enumerate(pixels):
+                if cluster_id == cluster_id[1]:
+                    brain_1d_arr[slice, idx] = cluster_id
+    return brain_1d_arr
