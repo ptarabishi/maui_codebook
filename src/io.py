@@ -2,7 +2,8 @@ import os
 import glob
 import ants
 import logging
-
+import nibabel as nib
+import numpy as np
 import h5py
 
 LOG = logging.getLogger(__name__)
@@ -10,8 +11,11 @@ LOG = logging.getLogger(__name__)
 def load_nii(fpath: str):
     """loads volume from filepath and returns N-Dim numpy array"""
     LOG.info(f"loading: {fpath}")
-    imgarray = ants.image_read(fpath)
-    volume = imgarray.numpy()
+    # imgarray = ants.image_read(fpath)
+    # volume = imgarray.numpy()
+    img = nib.load(fpath, mmap=True)
+    data_obj = img.dataobj
+    volume = np.asarray(data_obj)
     LOG.debug(f"volume shape: {volume.shape}")
     return volume
 

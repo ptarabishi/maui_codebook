@@ -1,7 +1,7 @@
 import glob
 import numpy as np
 import os
-from src.io import load_nii, save_nii
+# from src.io import load_nii, save_nii
 
 def make_averaged_nii(path):
     # find all nii files

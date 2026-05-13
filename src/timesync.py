@@ -16,6 +16,14 @@ def extract_scope_timestamps(experiment_path, plot = False):
 
     return pd.DataFrame(true_scope_ttl)
 
+def extract_camera_timestamps(experiment_path, plot = False):
+    raw_ttl = load_camera_voltage_data(experiment_path)
+
+    if plot == True:
+        plot_timestamps(raw_ttl)
+
+    return pd.DataFrame(raw_ttl)
+
 # load in files containing timestamp data
 def load_scope_voltage_data(experiment_path):
     """
@@ -31,6 +39,21 @@ def load_scope_voltage_data(experiment_path):
     maui_timestamps = detect_on_times(data['Time(ms)'], data[' Input 1'], threshold=4)
 
     return maui_timestamps
+
+def load_camera_voltage_data(experiment_path):
+    """
+       Loads voltage data and pulls out timestamps into arrays
+   """
+    file = glob.glob(os.path.join(experiment_path, '*.csv'))[0]
+    data = pd.read_csv(file)
+
+    # determine signal source by comparing average voltage from Carter's script
+    # data.columns = data.columns.str.strip()
+    # column_means = np.floor(data.mean())
+
+    camera_timestamps = detect_on_times(data['Time(ms)'], data[' Input 2'], threshold=3)
+
+    return camera_timestamps
 
 def load_scope_xml_data(experiment_path):
     file = glob.glob(os.path.join(experiment_path,'*.xml'))[0]
