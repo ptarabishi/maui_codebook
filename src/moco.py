@@ -2,7 +2,7 @@
 
 import ants
 import numpy as np
-from src import io
+from tqdm import trange
 
 # generate mean brain based on first 300 volumes
 def generate_fixed(brain_arr, volumes:int):
@@ -19,7 +19,7 @@ def motion_correction(moving_brain, fixed_brain):
     n_vols = moving_brain.shape[-1]
     moco_brain = np.zeros_like(moving_brain)
 
-    for vol in range(n_vols):
+    for vol in trange(n_vols, desc='motion correction', leave=False):
         moving = ants.from_numpy(moving_brain[:, :, :, vol])
         moco_brain[:, :, :, vol] = apply(fixed_brain, moving).numpy()
     return moco_brain
