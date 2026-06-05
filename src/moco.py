@@ -11,7 +11,7 @@ def generate_fixed(brain_arr, volumes:int):
     return mean, fixed
 
 def apply(fixed, moving):
-    moco_moving = ants.registration(fixed, moving, type_of_transform='SyN')
+    moco_moving = ants.registration(fixed, moving, type_of_transform='SyN', )
     return moco_moving["warpedmovout"]
 
 def motion_correction(moving_brain, fixed_brain):
@@ -19,7 +19,7 @@ def motion_correction(moving_brain, fixed_brain):
     n_vols = moving_brain.shape[-1]
     moco_brain = np.zeros_like(moving_brain)
 
-    for vol in trange(n_vols, desc='motion correction', leave=False):
+    for vol in trange(n_vols, desc='motion correction'):
         moving = ants.from_numpy(moving_brain[:, :, :, vol])
         moco_brain[:, :, :, vol] = apply(fixed_brain, moving).numpy()
     return moco_brain

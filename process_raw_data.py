@@ -57,7 +57,7 @@ for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
     struc_data = io.load_nii(struc_channel)
 
     # generate fixed brain
-    mean_brain, fixed_brain = moco.generate_fixed(struc_data, struc_data.shape[-1])
+    mean_brain, fixed_brain = moco.generate_fixed(struc_data, 300)
     del struc_data
     gc.collect()
     print('    generating fixed brain')
