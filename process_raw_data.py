@@ -1,13 +1,15 @@
 import glob
 import h5py
 import pandas as pd
-
-from src import io, moco, roi, ttl, zdF
+import numpy as np
+from src import moco, roi, zdF
 import os
 from tqdm import tqdm
-# import numpy as np
-# from scipy.signal import savgol_filter
+from nre.io import  save, load
+
+import nibabel as nib
 import gc
+from sys import getsizeof
 
 # set main data path
 base_data_path = "/Volumes/AhmedLab/princess/data/pIP10"
@@ -53,39 +55,51 @@ for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
         struc_channel = func_channel
 
     # loads in ENTIRE niis
-    print('    loading functional brain')
-    struc_data = io.load_nii(struc_channel)
+    print('    loading structural brain')
+    # struc_data = load_nii(struc_channel)
+    struc_data = load(struc_channel)
 
     # generate fixed brain
     mean_brain, fixed_brain = moco.generate_fixed(struc_data, 300)
     del struc_data
     gc.collect()
     print('    generating fixed brain')
-    io.save_nii(f'{processed_path}/fixed.nii', mean_brain)
+    save(f'{processed_path}/fixed.nii', mean_brain)
 
 
     # run motion correction on functional data and save out motion corrected brain
     print('    loading functional brain')
-    func_data = io.load_nii(func_channel)
+    # func_data = load(func_channel)
+    func_data = nib.load(func_channel, mmap=True)
     dimensions = pd.DataFrame(func_data.shape)
     print('    running motion correction')
-    moco_func_brain = moco.motion_correction(func_data, fixed_brain)
-    del func_data
+    moco_func_brain = []
+    for idx, image in enumerate(range(func_data.shape[-1])):
+        single_volume_data = func_data.dataobj[..., idx]
+        single_volume_data_arr = np.asarray(single_volume_data)
+        print(f'volume size in bytes: {getsizeof(single_volume_data)}')
+        moco_frame = moco.motion_correction(single_volume_data_arr, fixed_brain)
+        moco_func_brain.append(moco_frame)
+        del moco_frame
     gc.collect()
-    io.save_nii(f'{processed_path}/motion_corrected.nii', moco_func_brain)
+    print(getsizeof(moco_func_brain))
+    save(f'{processed_path}/motion_corrected.nii', moco_func_brain)
 
 
     print('    clustering pixels')
-    n_clusters = 500
+    n_clusters = 20
     cluster_labels = roi.extract_ROIs(moco_func_brain, n_clusters)
     print('    calculating df/F signal')
     df = zdF.calculate_zscoredF(moco_func_brain, cluster_labels, n_clusters)
+    del moco_func_brain
 
     # make cluster + zdF h5
     hf = h5py.File(f'{processed_path}/{n_clusters}_signals.h5', 'w')
     hf.create_dataset('labels', data=cluster_labels)
     hf.create_dataset('df/f', data=df)
     hf.close()
+    del df
+    gc.collect()
 
     # load in csv
     # csv_file = glob.glob(os.path.join(path, '*csv'))[0]
