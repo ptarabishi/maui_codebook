@@ -17,6 +17,7 @@ from sklearn.cluster import AgglomerativeClustering
 from scipy.ndimage import gaussian_filter1d
 
 import logging
+from tqdm import trange
 
 LOG = logging.getLogger(__name__)
 
@@ -103,9 +104,9 @@ def dFdt(rois):
 
 def extract_ROIs(nii, n_clusters):
     labels = []
-    for iSlice in range(nii.shape[2]): # for each slice in Z
+    for iSlice in trange(nii.shape[2]): # for each slice in Z
     # generate n_clusters within a single slice
-
+    #     print(iSlice)
         cluster_model = create_2d_clusters(nii[:, :, iSlice, 0:-1:5], n_clusters, 'tmp/cluster_mem')
         labels.append(cluster_model.labels_)
     return labels

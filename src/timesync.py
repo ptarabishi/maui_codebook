@@ -111,7 +111,3 @@ def plot_timestamps(source1, source2 = None, xlims = [0,1000]):
     plt.xlabel('Time (ms)')
     if xlims is not None:
         plt.xlim(xlims[0], xlims[1])
-
-def save_timestamp_hf(path, timestamps_to_save):
-    with h5py.File(f'{path}scope_timestamps.h5', 'w') as hf:
-        hf.create_dataset('my_data', data=timestamps_to_save)

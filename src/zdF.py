@@ -24,15 +24,20 @@ def _zdff(F, win=200, smooth=False):
     return _zscore(dff)
 
 def calculate_zscoredF(brain, labels_arr, n_clusters=200):
-    ROIs = np.empty((brain.shape[2], n_clusters, brain.shape[-1]))
+    ROIs = np.empty((brain.shape[2], n_clusters, brain.shape[-1])) # (z, clusters, t)
     # set a baseline F window
-    F_WINDOW = ROIs.shape[2]
+    F_WINDOW = ROIs.shape[2] # over the entire experiment (t)
 
+    # loop over every slice
     for iSlice in range(ROIs.shape[0]):
+        # initialize array to hold signal over time, by cluster
         mean_signal = np.empty(shape=(ROIs.shape[2], n_clusters))
 
+        # at each time point
         for vol in range(ROIs.shape[2]):
+            # get mean 2d value given 2d brain array, slice labels, and number of clusters
             mean_supervox, _ = roi.get_supervoxel_mean_2D(brain[:, :, iSlice, vol], labels_arr[iSlice], n_clusters)
+            # assign signal at a given slice as the mean calculation
             mean_signal[vol] = mean_supervox
 
         # find zscored(df/f) and smooth over time
