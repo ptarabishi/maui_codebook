@@ -4,31 +4,9 @@ import logging
 import numpy as np
 import h5py
 import pandas as pd
-from flymetrics.utils import fill_missing
+import nibabel as nib
 
 LOG = logging.getLogger(__name__)
-
-def load_nii(fpath: str):
-    """loads volume from filepath and returns N-Dim numpy array"""
-    LOG.info(f"loading: {fpath}")
-    # imgarray = ants.image_read(fpath)
-    # volume = imgarray.numpy()
-    # img = nib.load(fpath, mmap=True)
-    # data_obj = img.dataobj
-    # volume = np.asarray(data_obj)
-    LOG.debug(f"volume shape: {volume.shape}")
-    return volume
-
-def save_nii(fpath: str, volume):
-    "save volume to fpath"
-    ants.image_write(ants.from_numpy(volume), fpath)
-    LOG.info(f'saved volume to: {fpath}')
-
-def load_pickle(fpath):
-    pass
-
-def save_pickle(fpath):
-    pass
 
 ## new functions for loading in h5 files
 def get_base_path(experiment_id, data_stage, base_dir = '/Volumes/AhmedLab/princess/data/'):
@@ -46,7 +24,8 @@ def load_clusters(experiment_path):
     with h5py.File(file, 'r') as f:
         cluster_labels = f['labels'][...]
         df = f['df/f'][...]
-    return cluster_labels, df
+        timestamps = f['timestamps'][...]
+    return cluster_labels, df, timestamps
 
 def load_acquisition_params(experiment_path):
     file = glob.glob(f'{experiment_path}/*acquisition_parameters.h5')[0]
