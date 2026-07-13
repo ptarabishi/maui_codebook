@@ -1,13 +1,17 @@
 import glob
+
+import ants
 import h5py
 import pandas as pd
-
-from src import io, moco, roi, ttl, zdF
+import numpy as np
+from src import moco, roi, zdF
 import os
-from tqdm import tqdm
-# import numpy as np
-# from scipy.signal import savgol_filter
+from tqdm import tqdm, trange
+from nre.io import  save, load
+
+import nibabel as nib
 import gc
+from sys import getsizeof
 
 # set main data path
 base_data_path = "/Volumes/AhmedLab/princess/data/pIP10"
@@ -24,12 +28,14 @@ for folder_name in os.listdir(os.path.join(base_data_path,'raw')):
     if folder_name != ".DS_Store":
         # for folders that have a processed + raw folder
         # add to processed experiments list
-        if os.path.isdir(raw_path) and os.path.isdir(processed_path):
-            processed_exps.append(folder_name)
-        else:
+        #if os.path.isdir(raw_path) and os.path.isdir(processed_path):
+        #    processed_exps.append(folder_name)
+        #else:
         # on directories that do not have a processed directory
-            unprocessed_exps.append(folder_name)
+        #    unprocessed_exps.append(folder_name)
 
+        # to run on all experiments
+        unprocessed_exps.append(folder_name)
 print(f'processed experiments: {processed_exps}')
 print(f'unprocessed experiments: {unprocessed_exps}')
 
@@ -39,7 +45,8 @@ for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
 
     # make processed directory
     processed_path = os.path.join(base_data_path, 'processed', exp)
-    os.mkdir(processed_path)
+    if not glob.glob(processed_path):
+        os.mkdir(processed_path)
     print('    made processed directory')
     # load in functional and structural data
     if glob.glob(os.path.join(path, '*channel_2.nii')):
@@ -48,44 +55,72 @@ for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
         struc_channel = func_channel
     else:
         # if there is only data from a single channel
+        print(path)
         func_channel = glob.glob(os.path.join(path, '*channel_1.nii'))[0]
         # use the functional data to generate fixed brain
-        struc_channel = func_channel
+        #struc_channel = func_channel
 
     # loads in ENTIRE niis
-    print('    loading functional brain')
-    struc_data = io.load_nii(struc_channel)
+    print('    loading structural brain')
+    # struc_data = load_nii(struc_channel)
+    volumes = 300
+    if not glob.glob(f'{processed_path}/fixed_{volumes}vols.nii'):
+        struc_data = load(struc_channel)
 
     # generate fixed brain
-    mean_brain, fixed_brain = moco.generate_fixed(struc_data, 300)
-    del struc_data
-    gc.collect()
-    print('    generating fixed brain')
-    io.save_nii(f'{processed_path}/fixed.nii', mean_brain)
-
+        mean_brain, fixed_brain = moco.generate_fixed(struc_data, volumes)
+        del struc_data
+        gc.collect()
+        print('    generating fixed brain')
+        save(f'{processed_path}/fixed_{volumes}vols.nii', mean_brain)
+        del mean_brain
+        gc.collect()
+    else:
+        print('    fixed brain already generated')
+        fixed_brain = load(f'{processed_path}/fixed_{volumes}vols.nii')
+        fixed_brain = ants.from_numpy(fixed_brain)
 
     # run motion correction on functional data and save out motion corrected brain
     print('    loading functional brain')
-    func_data = io.load_nii(func_channel)
+    # func_data = load(func_channel)
+    func_data = nib.load(func_channel, mmap=True)
     dimensions = pd.DataFrame(func_data.shape)
-    print('    running motion correction')
-    moco_func_brain = moco.motion_correction(func_data, fixed_brain)
+    print(f'    running motion correction with shape {dimensions}')
+    # moco_func_brain = []
+    for idx, image in enumerate(range(func_data.shape[-1])):
+        # for i in trange(func_data.shape[-1]):
+        if not glob.glob(f'{processed_path}/motion_corrected_volume{idx}.nii'):
+            single_volume_data = func_data.dataobj[..., idx]
+            single_volume_data_arr = np.asarray(single_volume_data)
+            moco_frame = moco.motion_correction(single_volume_data_arr, fixed_brain)
+        #moco_func_brain.append(moco_frame)
+
+            save(f'{processed_path}/motion_corrected_volume{idx}.nii', moco_frame)
+            del moco_frame
+            del single_volume_data
+            del single_volume_data_arr
+    # print(getsizeof(moco_func_brain))
     del func_data
+    del fixed_brain
     gc.collect()
-    io.save_nii(f'{processed_path}/motion_corrected.nii', moco_func_brain)
+    # print(getsizeof(moco_func_brain))
 
 
-    print('    clustering pixels')
-    n_clusters = 500
-    cluster_labels = roi.extract_ROIs(moco_func_brain, n_clusters)
-    print('    calculating df/F signal')
-    df = zdF.calculate_zscoredF(moco_func_brain, cluster_labels, n_clusters)
+
+    #print('    clustering pixels')
+    #n_clusters = 20
+    #cluster_labels = roi.extract_ROIs(moco_func_brain, n_clusters)
+    #print('    calculating df/F signal')
+    #df = zdF.calculate_zscoredF(moco_func_brain, cluster_labels, n_clusters)
+    #del moco_func_brain
 
     # make cluster + zdF h5
-    hf = h5py.File(f'{processed_path}/{n_clusters}_signals.h5', 'w')
-    hf.create_dataset('labels', data=cluster_labels)
-    hf.create_dataset('df/f', data=df)
-    hf.close()
+    #hf = h5py.File(f'{processed_path}/{n_clusters}_signals.h5', 'w')
+    #hf.create_dataset('labels', data=cluster_labels)
+    #hf.create_dataset('df/f', data=df)
+    #hf.close()
+    #del df
+    #gc.collect()
 
     # load in csv
     # csv_file = glob.glob(os.path.join(path, '*csv'))[0]
