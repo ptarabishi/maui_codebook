@@ -15,7 +15,7 @@ def _zdff(F, win=200, smooth=False):
 
     # F [pixel]
     # find average signal in first `win` volumes
-    Fbase = np.mean(F[:, :win], axis=-1) 
+    Fbase = np.mean(F[:, :win], axis=-1)
     dff = (F - Fbase[:, None]) / Fbase[:, None]
 
     if smooth:
