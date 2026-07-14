@@ -110,3 +110,4 @@ def extract_ROIs(nii, n_clusters):
         cluster_model = create_2d_clusters(nii[:, :, iSlice, 0:-1:5], n_clusters, 'tmp/cluster_mem')
         labels.append(cluster_model.labels_)
     return labels
+
