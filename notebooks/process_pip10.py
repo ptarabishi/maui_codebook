@@ -83,7 +83,7 @@ def main(experiment_path, n_clusters):
 
     start_time = time.time()
     for i in trange(brain_array.shape[-1]):
-        t0 = time.time()
+        # t0 = time.time()
         single_nii = f'{experiment_path}/motion_corrected_volume{i}.nii'
         file = nib.load(single_nii)
         data = file.get_fdata()
@@ -96,7 +96,6 @@ def main(experiment_path, n_clusters):
     logger.info("Starting zscoredF calculation")
     t0 = time.time()
     df = calculate_zscoredF_voxels(brain_array)
-    # TODO: can delete the brain_array after - not used anymore?
     del brain_array
     gc.collect()
     logger.info(f'{time.time() - t0}s to calculate zscoredF voxels')
@@ -114,7 +113,6 @@ def main(experiment_path, n_clusters):
     hf = h5py.File(hf_name, 'w')
     logger.info(f"Saving to h5py file")
     hf.create_dataset('labels', data=cluster_array)
-    hf.create_dataset('df/f', data=df)
     logger.info(f"Saved to h5py file")
     hf.close()
     print(f'saved as {hf_name}')

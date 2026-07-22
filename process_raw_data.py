@@ -4,7 +4,7 @@ import ants
 import h5py
 import pandas as pd
 import numpy as np
-from src import moco, roi, zdF
+from maui_codebook import moco, roi, zdF
 import os
 from tqdm import tqdm, trange
 from nre.io import  save, load
