@@ -1,5 +1,5 @@
 [project]
-name = "maui-codebook"
+name = "maui-analysis"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,13 +7,25 @@ requires-python = ">=3.13"
 dependencies = [
     "flymetrics",
     "jupyter>=1.1.1",
+    "loguru>=0.7.3",
     "matplotlib>=3.10.9",
     "nibabel>=5.4.2",
     "nifty-roi-extractor",
     "plotly>=6.8.0",
     "seaborn>=0.13.2",
+    "tqdm>=4.68.2",
+    "maui_codebook"
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["maui_analysis*", "maui_analysis/**"]
 
 [tool.uv.sources]
 flymetrics = { git = "ssh://git@github.com/oahmedlab/flymetrics", branch = "packaging" }
 nifty-roi-extractor = { git = "ssh://git@github.com/oahmedlab/nifty-roi-extractor", branch = "packaging" }
+maui_codebook= { git = "ssh://git@github.com/oahmedlab/maui_codebook", tag = "V1.0.0" }

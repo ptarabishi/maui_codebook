@@ -4,14 +4,13 @@ import ants
 import h5py
 import pandas as pd
 import numpy as np
-from src import moco, roi, zdF
+from maui_codebook import moco, roi, zdF
 import os
 from tqdm import tqdm, trange
 from nre.io import  save, load
-
+from time import sleep
 import nibabel as nib
 import gc
-from sys import getsizeof
 
 # set main data path
 base_data_path = "/Volumes/AhmedLab/princess/data/pIP10"
@@ -40,6 +39,8 @@ print(f'processed experiments: {processed_exps}')
 print(f'unprocessed experiments: {unprocessed_exps}')
 
 for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
+    if 'win03' in exp:
+        continue
     print(f'working on: {exp}')
     path = os.path.join(base_data_path, 'raw', exp)
 
@@ -87,18 +88,22 @@ for exp in tqdm(unprocessed_exps, desc='unprocessed experiments'):
     dimensions = pd.DataFrame(func_data.shape)
     print(f'    running motion correction with shape {dimensions}')
     # moco_func_brain = []
+    # try up to 3 times
+
     for idx, image in enumerate(range(func_data.shape[-1])):
         # for i in trange(func_data.shape[-1]):
         if not glob.glob(f'{processed_path}/motion_corrected_volume{idx}.nii'):
             single_volume_data = func_data.dataobj[..., idx]
-            single_volume_data_arr = np.asarray(single_volume_data)
-            moco_frame = moco.motion_correction(single_volume_data_arr, fixed_brain)
+            single_volume_data = np.asarray(single_volume_data)
+            moco_frame = moco.motion_correction(single_volume_data, fixed_brain)
         #moco_func_brain.append(moco_frame)
 
             save(f'{processed_path}/motion_corrected_volume{idx}.nii', moco_frame)
             del moco_frame
             del single_volume_data
-            del single_volume_data_arr
+            # print('sleeping for 2 seconds')
+            sleep(2)
+
     # print(getsizeof(moco_func_brain))
     del func_data
     del fixed_brain
