@@ -1,42 +1,11 @@
-import argparse
 import glob
 import h5py
-from maui_codebook import zdF
 import numpy as np
 import nibabel as nib
 import time
 from tqdm import trange
-import matplotlib.pyplot as plt
 
-def calculate_zscoredF_voxels(raw_array):
-    # loop over every slice
-    x_by_y = raw_array.shape[0] * raw_array.shape[1]
-    window = raw_array.shape[-1]
-    final_array = np.empty((raw_array.shape[2], x_by_y, window))
-
-    for iSlice in range(raw_array.shape[2]):
-        # collapse x and y
-        array = raw_array[...,iSlice, :]
-        voxel_array = array.reshape(x_by_y,-1)
-        # print(voxel_array.shape)
-
-        final_array[iSlice,:,:] = zdF._zdff(voxel_array, win = window, smooth = True)
-    return final_array
-
-def get_supervoxel_mean_2d(brain_slice, cluster_labels, n_clusters):
-    # neural_data = brain_slice.shape[]  # make into vector
-
-    signals = []
-    cluster_idx = []
-
-    for nn in range(n_clusters):
-        idx = np.where(cluster_labels == nn)[0]
-        mean_signal = np.nanmean(brain_slice[idx])
-
-        signals.append(mean_signal)
-        cluster_idx.append(idx)
-
-    return np.asarray(signals), cluster_idx
+from maui_analysis.supervoxels import calculate_zscoredF_voxels, get_supervoxel_mean_2d
 
 def main(experiment_directory):
     nii_dir = f'{experiment_directory}/motion_corrected_*.nii'
@@ -62,7 +31,7 @@ def main(experiment_directory):
 
     file = glob.glob(f"{experiment_directory}/*signals_260713.h5")[0]
     with h5py.File(file, "r") as f:
-        cluster_labels = f["labels"][...]s
+        cluster_labels = f["labels"][...]
 
     signal = np.empty(shape=(df.shape[0], n_clusters, T))
     for slice in range(df.shape[0]):
