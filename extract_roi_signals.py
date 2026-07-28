@@ -29,7 +29,7 @@ def main(experiment_directory):
     T = len(all_nii)
     n_clusters = 20
 
-    file = glob.glob(f"{experiment_directory}/*signals_260713.h5")[0]
+    file = glob.glob(f"{experiment_directory}/*supervoxels.h5")[0]
     with h5py.File(file, "r") as f:
         cluster_labels = f["labels"][...]
 
@@ -46,9 +46,10 @@ def main(experiment_directory):
 
 
 if __name__ == "__main__":
-    experiment_list = glob.glob('/Volumes/AhmedLab/princess/data/pIP10/processed/*')[0:5]
+    experiment_list = glob.glob('/Volumes/AhmedLab/princess/data/pIP10/processed/*')[7:]
     for iExp in experiment_list:
-        if glob.glob(f'{iExp}/*signals_260713.h5'):
+        if glob.glob(f'{iExp}/*supervoxels.h5'):
+            print(f"calculating supervoxels in exp: {iExp}")
             main(iExp)
         else:
             print(f"Skipping {iExp}")
