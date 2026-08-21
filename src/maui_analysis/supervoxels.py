@@ -1,8 +1,10 @@
 import numpy as np
-from maui_codebook import zdF
+from maui_codebook import zscore
 from sklearn.feature_extraction.image import grid_to_graph
 from sklearn.cluster import AgglomerativeClustering
 from tqdm import trange
+import nibabel as nib
+import time
 
 def calculate_zscoredF_voxels(raw_array):
     # loop over every slice
@@ -16,7 +18,7 @@ def calculate_zscoredF_voxels(raw_array):
         voxel_array = array.reshape(x_by_y,-1)
         # print(voxel_array.shape)
 
-        final_array[iSlice,:,:] = zdF._zdff(voxel_array, win = window, smooth = True)
+        final_array[iSlice,:,:] = zscore._zdff(voxel_array, win = window, smooth = True)
     return final_array
 
 def get_supervoxel_mean_2d(brain_slice, cluster_labels, n_clusters):
